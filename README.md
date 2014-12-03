@@ -11,7 +11,7 @@ more info can be found here: http://aws.amazon.com/ec2/purchasing-options/spot-i
 By design spot instances can be gone at any given second they, due to a raised average price
 Therefore making spot instances far from ideal in a high available (HA) setup, which is dissapointing because it can be a huge cost saver.
 
-### There is got to be another way!
+### There is got to be better way!
 However spot instances can still be used for redundant copies of servers in your HA setup:
 for example: you have a small HA setup, 1 ELB and 2 webservers (web1, web2) in 2 availability zones
 if one of these webservers (web2) dies, your website is still up and running, due to web1 still beeing there.
