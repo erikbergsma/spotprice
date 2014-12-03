@@ -44,7 +44,7 @@ this value of 1% can be overridden while using new_instance.py
 - a copy of the code in this repo
 
 ## How to:
-- copy and modify spotprice.cfg and store it on /root/ or your current workdir on your system / server
-- start a new instance by new_instance.py (use the --help!!!)
-- set a cron somewhere on a server for check_running_instances.py (recommended setting is every 5 minutes)
+1. copy and modify spotprice.cfg and store it on /root/ or your current workdir on your system / server
+2. start a new instance by new_instance.py (use the --help!!!)
+3. set a cron somewhere on a server for check_running_instances.py (recommended setting is every 5 minutes)
 

@@ -2,8 +2,8 @@
 import logging
 import argparse
 import sys
-from libs.spot_instances import Spotinstances
 from libs import ec2_prices
+from libs.spot_instances import Spotinstances
 
 def setup_parser():
     parser = argparse.ArgumentParser()
