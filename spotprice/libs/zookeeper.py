@@ -13,7 +13,7 @@ log = logging.basicConfig()
 class Zookeeper(object):
     """ class to interact with zookeeper, and some wrappers for setting and getting data """
             
-    def __init__(self, connection=False, zookeeperhost=None):
+    def __init__(self, connection=None, zookeeperhost=None):
         """ possibility to override the zookeeperhost (url:port) 
         otherwise it reads from a configfile """
                 
