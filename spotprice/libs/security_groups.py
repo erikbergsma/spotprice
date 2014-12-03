@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+import logging
 from ec2 import Ec2
+
+log = logging.basicConfig()
 
 def get_id_for_groupname(groupname, ec2=None):
     used_group=False
@@ -16,6 +19,6 @@ def get_id_for_groupname(groupname, ec2=None):
             used_group = group
             
     if not used_group:
-        print("security group with name: %s not found" % groupname)
+        log.error("security group with name: %s not found" % groupname)
     
     return used_group

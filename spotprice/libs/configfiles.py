@@ -2,9 +2,12 @@
 
 import os
 import sys
+import logging
 
 from ConfigParser import SafeConfigParser
 from ConfigParser import NoSectionError
+
+log = logging.basicConfig()
 
 def get_value_from_configfile(configfile_name, section_name, value, extrafolders=None):
     """
@@ -29,5 +32,5 @@ def get_value_from_configfile(configfile_name, section_name, value, extrafolders
         except NoSectionError:
             continue
         
-    print("cannot find a value for: \"%s\" in a configfile called: \"%s\" in folders: %s" % (value, configfile_name, folders))
+    log.error("cannot find a value for: \"%s\" in a configfile called: \"%s\" in folders: %s" % (value, configfile_name, folders))
     sys.exit(2)

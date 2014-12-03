@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import kazoo
-import ast
-import sys
 import logging
 
 import configfiles
@@ -10,9 +8,13 @@ import configfiles
 from kazoo.client import KazooClient
 from kazoo.handlers.threading import TimeoutError
 
+log = logging.basicConfig()
+
 class Zookeeper(object):
             
     def __init__(self, connection=False, zookeeperhost=None):
+        """ possibility to override the zookeeperhost (url:port) 
+        otherwise it reads from a configfile """
                 
         if not zookeeperhost:
             self.ZOOKEEPERHOST = configfiles.get_value_from_configfile("zookeeper.cfg", "zookeeper", "url")
@@ -34,7 +36,7 @@ class Zookeeper(object):
             self.connection = None
     
     def create_node(self, zkpath, value=None):
-        print("creating this zkpath: %s and setting it to this value: %s" % (zkpath, value))
+        log.debug("creating this zkpath: %s and setting it to this value: %s" % (zkpath, value))
         
         try:
             self.connection.ensure_path(zkpath)
@@ -50,20 +52,6 @@ class Zookeeper(object):
     def node_exists(self, zkpath):
         return self.connection.exists(zkpath)
                     
-    # Print the version of a instanceid and its data
-    def fetch_and_decode_node(self, zknode, return_stat=False):
-        rawdata, stat = self.connection.get(zknode)
-        decoded = rawdata.decode("utf-8")
-        
-        try:
-            data = ast.literal_eval(decoded)
-        except ValueError:
-            print("instanceid details are not in dict format")
-            print("data: %s type: %s" % (decoded, type(decoded)))
-            sys.exit(1)
-    
-        return data, stat
-    
     def fetch_node(self, zknode, return_stat=False):
         rawdata, stat = self.connection.get(zknode)
         

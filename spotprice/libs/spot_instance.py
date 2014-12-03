@@ -4,13 +4,14 @@ import logging
 import copy
 import time
 import requests
-import securitygroups as securitygroups
+
+import security_groups
 import ec2 as ec2
 import zookeeper as zookeeper
 
 from boto.exception import EC2ResponseError
 
-logging.basicConfig()
+log = logging.basicConfig()
 
 class Spotinstance():
     #this is usually the first part of a full node path; e.g. /instances/i-bloebla/role or /backups/ratingredis/success
@@ -92,7 +93,11 @@ class Spotinstance():
         """Loop through all pending request ids waiting for them to be fulfilled.
         If a request is fulfilled, remove it from pending_request_ids.
         If there are still pending requests, sleep and check again in 10 seconds.
-        Only return when all spot requests have been fulfilled."""
+        Only return when all spot requests have been fulfilled.
+        
+        thanks to: Lucas Hrabovsky for this
+        http://www.imlucas.com/post/55003108849/waiting-for-spot-instances-to-be-fulfilled-with
+        """
         try:
             requests = self.ec2.connection.get_all_spot_instance_requests(request_ids=pending_request_ids)
             
@@ -100,15 +105,15 @@ class Spotinstance():
                 if request.status.code == 'fulfilled' and request.instance_id:
                     pending_request_ids.pop(pending_request_ids.index(request.id))
                     instance_ids.append(request.instance_id)
-                    print("spot request `{}` fulfilled!".format(request.id))
+                    log.info("spot request `{}` fulfilled!".format(request.id))
                 else:
-                    print("waiting on `{}`".format(request.id))
+                    log.debug("waiting on `{}`".format(request.id))
         
         except EC2ResponseError:
             pass
     
         if len(pending_request_ids) == 0:
-            print("all spots fulfilled!")
+            log.debug("all spots fulfilled!")
             return instance_ids
         
         else:
@@ -125,14 +130,14 @@ class Spotinstance():
         if loadbalancers:
             loadbalancers[0].register_instances([self.id])
         else:
-            print "could not find ELB with name: %s" % self.elb_name
+            log.warn("could not find ELB with name: %s" % self.elb_name)
             
     def spawn(self, count=1, typearg="one-time"):
         securitygroup_ids=[]
         for security_group in self.securitygroups:
-            securitygroup_ids.append(securitygroups.get_id_for_groupname(security_group, ec2=self.ec2))
+            securitygroup_ids.append(security_groups.get_id_for_groupname(security_group, ec2=self.ec2))
         
-        #this function returns an array
+        #this function returns an list
         spawned_spotrequests = self.ec2.connection.request_spot_instances(price=self.price, image_id=self.ami, 
                                                                           key_name=self.keyname, instance_type=self.instancetype,
                                                                           security_group_ids=securitygroup_ids, 

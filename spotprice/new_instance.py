@@ -3,22 +3,18 @@ import logging
 import argparse
 import sys
 
-import libs.ec2
-import libs.ec2prices
+from libs.ec2 import Ec2
+from libs.spot_instance import Spotinstance
 
-from libs.spotinstance import Spotinstance
+from libs import ec2_prices
+from libs import configfiles
 
 from argparse import RawTextHelpFormatter
 from boto.exception import BotoServerError
 from boto.exception import EC2ResponseError
 
-SPOT_PRICES_URL="http://spot-price.s3.amazonaws.com/spot.js"
-INSTANCEPREFIX="/spotinstances/"
-SUPPORTED_INSTANCES=[
-"t1.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c1.medium", "c1.xlarge", "m2.xlarge", 
-"m2.2xlarge", "m2.4xlarge", "cr1.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cc1.4xlarge", "cg1.4xlarge", "cc2.8xlarge", "g2.2xlarge", "c3.large", "c3.xlarge",
-"c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "t2.micro", "t2.small", "t2.medium"]
-SUPPORTED_AMIS=["ami-70dd0f07", "ami-7e439809", "ami-948f55e3", "ami-d28852a5"]
+SUPPORTED_INSTANCES = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_instance", list=True)
+SUPPORTED_AMIS = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_ami", list=True)
 
 def setup_parser():
     parser = argparse.ArgumentParser(description='usage: new_instance.py name role instancetype zone [[[[[[securitygroup1 securitygroup2] percentage] ami] keyname] elb] loglevel]', 
@@ -113,14 +109,14 @@ def check_arguments():
 def main():
     check_arguments()
     
-    current_spot_price = libs.ec2prices.get_current_spot_price_for_instancetype(args.instancetype, args.zone)
-    print "current spot price: %s" % current_spot_price
+    current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(args.instancetype, args.zone)
+    log.info("current spot price: %s" % current_spot_price)
     
-    current_on_demand_price = libs.ec2prices.get_ondemand_price_for_instancetype(args.instancetype)
-    print "current on demand price: %s" % current_on_demand_price
+    current_on_demand_price = ec2_prices.get_ondemand_price_for_instancetype(args.instancetype)
+    log.info("current on demand price: %s" % current_on_demand_price)
     
-    bidprice = libs.ec2prices.get_spotprice_bid(current_spot_price, args.percentage)
-    print "wanting to bid: %s" % bidprice
+    bidprice = ec2_prices.get_spotprice_bid(current_spot_price, args.percentage)
+    log.info("wanting to bid: %s" % bidprice)
         
     #price sanity check
     if float(bidprice) > float(current_on_demand_price):
@@ -134,13 +130,13 @@ def main():
     
     spotinstance.spawn()
     
-    print "succesfully spawned: %s with id: %s" % (spotinstance.name, spotinstance.id)
+    log.info("succesfully spawned: %s with id: %s" % (spotinstance.name, spotinstance.id))
 
 if __name__ == '__main__':
     args = setup_parser()
     log = setup_logging("new_spot_instance.py", loglevel=args.loglevel)
     logging.getLogger('boto').setLevel(logging.CRITICAL)
     
-    ec2 = libs.ec2.Ec2()
+    ec2 = Ec2()
     
     sys.exit(main())

@@ -7,9 +7,9 @@ import configfiles
 
 class Ec2:
     def __init__(self, connection=None):
-        self.EC2_REGION = configfiles.get_value_from_configfile("ec2.cfg", "ec2", "EC2_REGION")
-        self.EC2_KEY = configfiles.get_value_from_configfile("ec2.cfg", "ec2", "EC2_KEY")
-        self.EC2_SECRET = configfiles.get_value_from_configfile("ec2.cfg", "ec2", "EC2_SECRET")
+        self.EC2_REGION = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
+        self.EC2_KEY = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
+        self.EC2_SECRET = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
         
         if not connection:
             self.create_ec2_connection()

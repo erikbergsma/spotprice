@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 import requests
 import json
+import configfiles
 from datetime import datetime, timedelta
 
 from ec2 import Ec2
 
-INSTANCE_PRICES_URL="http://aws.amazon.com/ec2/pricing/pricing-on-demand-instances.json"
+INSTANCE_PRICES_URL = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "spot_price_url")
 
 def get_ondemand_price_for_instancetype(instancetypeArg):
     response = requests.get(INSTANCE_PRICES_URL)
     prices = json.loads(response.text)
     
+    my_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "region")
+    
     for region in prices["config"]["regions"]:
-        if region["region"] == "eu-ireland":
+        if region["region"] == my_region:
             for instancegroup in region["instanceTypes"]:
                 for instancetype in instancegroup["sizes"]:
                     if instancetype["size"] == instancetypeArg:

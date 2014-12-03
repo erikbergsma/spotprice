@@ -1,10 +1,8 @@
 todo:
-- multiple security groups - check
-- support for adding to a loadbalancer - check
-- support for availibility zones - check
-- support for paravirt / hvm - open
-- double check if used json is till the right one - check
-- remove spot instance script - open
-- check if the new bidprice is not higher as the on demand price - check
+- save the overbid percentage in zookeeper, instead || next to the price we offered 
+- support for checking if an HVM/paravirtual instance is compatible with a certain instance type
+- support for EBS based instances
+- remove and/or stop spot_instance script
+- implement action in check_running_instances.py when the new spot price is above the on demand price
 
 
