@@ -1,10 +1,10 @@
 
 Todo
 - USE UNDERSCORE FOR COMBINING WORDS! e.g
--- ec2_prices.py
--- config_files.py
--- spot_prices.py
--- spot_instance
+-- ec2_prices.py  
+-- config_files.py  
+-- spot_prices.py  
+-- spot_instance  
 - Replace print statements with proper logging debug/info/warn
 - Define SUPPORTED_AMIS as parameter/settings
 - Dynamically fetch SUPPORTED_INSTANCES from AWS
