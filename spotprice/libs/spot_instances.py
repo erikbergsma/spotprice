@@ -8,7 +8,7 @@ from zookeeper import Zookeeper
 
 log = logging.basicConfig()
 
-class Spotinstances():
+class Spot_instances():
     """ class to interact (get/create/list) spot instances """
     
     ATTRIBUTES = ["price", "role", "name", "instancetype", "ami",
@@ -63,7 +63,7 @@ class Spotinstances():
         
         spot_details = self.get_details_for_id(instance_id)
         
-        return spot_instance.Spotinstance(spot_details.get("price"),
+        return spot_instance.Spot_instance(spot_details.get("price"),
                                             spot_details.get("role"),
                                             spot_details.get("name"),
                                             spot_details.get("instancetype"),
@@ -90,3 +90,4 @@ class Spotinstances():
                 return_dict[attribute] = value.split(",") if attribute == "securitygroups" else value
                 
         return return_dict
+

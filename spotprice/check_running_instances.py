@@ -3,7 +3,7 @@ import logging
 import argparse
 import sys
 from libs import ec2_prices
-from libs.spot_instances import Spotinstances
+from libs.spot_instances import Spot_instances
 
 def setup_parser():
     parser = argparse.ArgumentParser()
@@ -22,11 +22,11 @@ def setup_logging(logname, loglevel="INFO"):
     return logger
 
 def main():
-    log.debug("getting definded spotinstances:")
-    all_defined_spot_instances = spotinstances.get_all_defined()
+    log.debug("getting definded spot instances:")
+    all_defined_spot_instances = spot_instances.get_all_defined()
     
-    log.debug("getting alive spotinstances:")
-    all_running_spot_instances = spotinstances.get_all_running()    
+    log.debug("getting alive spot instances:")
+    all_running_spot_instances = spot_instances.get_all_running()    
     
     #get the ones that are defined, but not running
     for defined_spot_instance in all_defined_spot_instances:
@@ -35,25 +35,25 @@ def main():
                 all_defined_spot_instances.pop(all_defined_spot_instances.index(defined_spot_instance))
     
     #these are the ones that are defined, but not running    
-    for spotinstance in all_defined_spot_instances:
-        log.info("this instance id is defined, but is not running anymore: %s, respawning") % spotinstance.id
+    for spot_instance in all_defined_spot_instances:
+        log.info("this instance id is defined, but is not running anymore: %s, respawning") % spot_instance.id
                 
-        current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(spotinstance.instancetype, spotinstance.zone)
+        current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(spot_instance.instancetype, spot_instance.zone)
         log.info("current_spot_price: %s") % current_spot_price
         
         price = ec2_prices.get_spotprice_bid(current_spot_price)
         log.info("going to bid: %s") % price
         
         log.info("going to spawn an instance with the following details:")
-        print "name: %s role: %s " % (spotinstance.name, spotinstance.role) 
+        print "name: %s role: %s " % (spot_instance.name, spot_instance.role) 
         
-        spotinstance.price = price
-        spotinstance.spawn()
+        spot_instance.price = price
+        spot_instance.spawn()
 
 if __name__ == '__main__':
     args = setup_parser()
     log = setup_logging("new_spot_instance.py", loglevel=args.loglevel)
     
-    spotinstances = Spotinstances()
+    spot_instances = Spot_instances()
     
     sys.exit(main())

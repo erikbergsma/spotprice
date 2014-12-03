@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from libs.ec2 import Ec2
-from libs.spot_instance import Spotinstance
+from libs.spot_instance import Spot_instance
 
 from libs import ec2_prices
 from libs import configfiles
@@ -70,8 +70,6 @@ def setup_logging(logname, loglevel="INFO"):
     return logger
 
 def check_arguments():
-    #check if the instance type is supported
-    
     #supported_instance_types=ec2.connection.get_all_instance_types()
     supported_instance_types = SUPPORTED_INSTANCES
     if args.instancetype not in supported_instance_types:
@@ -124,13 +122,13 @@ def main():
         sys.exit(1)
 
     #turn into spot spotinstances
-    spotinstance = Spotinstance(bidprice, args.role, args.name, args.instancetype, args.ami, 
+    spot_instance = Spot_instance(bidprice, args.role, args.name, args.instancetype, args.ami, 
                                      args.keyname, args.securitygroups, args.zone, 
                                      elb_name=args.elb, Ec2Connection=ec2.connection)
     
-    spotinstance.spawn()
+    spot_instance.spawn()
     
-    log.info("succesfully spawned: %s with id: %s" % (spotinstance.name, spotinstance.id))
+    log.info("succesfully spawned: %s with id: %s" % (spot_instance.name, spot_instance.id))
 
 if __name__ == '__main__':
     args = setup_parser()
