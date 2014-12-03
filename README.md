@@ -4,14 +4,14 @@
 these tools allow for spawning and automatic re-spawning of spot instances.
 
 **long**:
-### Spot instances: unreliable but cheap:
+### Spot instances: unreliable but cheap
 Using spot instances is great because they can be 3 to 4 times less expensive compared to on demand instances
 more info can be found here: http://aws.amazon.com/ec2/purchasing-options/spot-instances/
 
 By design spot instances can be gone at any given second they, due to a raised average price
 Therefore making spot instances far from ideal in a high available (HA) setup, which is dissapointing because it can be a huge cost saver.
 
-### There is got to be another way!:
+### There is got to be another way!
 However spot instances can still be used for redundant copies of servers in your HA setup:
 for example: you have a small HA setup, 1 ELB and 2 webservers (web1, web2) in 2 availability zones
 if one of these webservers (web2) dies, your website is still up and running, due to web1 still beeing there.
@@ -20,7 +20,7 @@ So if we are ok with one of the webservers dying, we may as well use a spot inst
 Availability of your website is still guranteed by the other redundant copy of the server (web1)
 and therefore we highly recommend using a on demand / reserved instance for this server.
 
-### Core problem and solution:
+### Core problem and solution
 The problem here is that as soon as web2 dies, we are stuck with a SPOF (single point of failure) in your HA design; if web1 does your website is down.
 Since AWS does not support dynamic spawning / pricing of spot instances, we have decided to build a tool that does that our selves.
 
@@ -28,7 +28,7 @@ In practical sence this means that after you spawned your server, the details of
 Next step is that every X minutes there is a daemon checking if your spot instance is still up and running, and if not, it relaunches it.
 This limits the time that you are stuck with a SPOF to about 5-10 minutes. Which is on our eyes acceptable compared to the amount of cost savings.
 
-### About the spotprice:
+### About the price
 its hard to determine a "safe enough" price for your spot instance; if the price is to low your instance may be killed to quickly,
 if it is too high you are paying to much (while the idea is cost saving) 
 
