@@ -1,6 +1,6 @@
 
 Todo
-- USE UNDERSCORE FOR COMBINING WORDS! e.g
+- USE UNDERSCORE FOR COMBINING WORDS! e.g  
 -- ec2_prices.py  
 -- config_files.py  
 -- spot_prices.py  
