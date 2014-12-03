@@ -8,7 +8,7 @@ from zookeeper import Zookeeper
 
 log = logging.basicConfig()
 
-class Spot_instances():
+class SpotInstances():
     """ class to interact (get/create/list) spot instances """
     
     ATTRIBUTES = ["price", "role", "name", "instancetype", "ami",
@@ -63,7 +63,7 @@ class Spot_instances():
         
         spot_details = self.get_details_for_id(instance_id)
         
-        return spot_instance.Spot_instance(spot_details.get("price"),
+        return spot_instance.SpotInstance(spot_details.get("price"),
                                             spot_details.get("role"),
                                             spot_details.get("name"),
                                             spot_details.get("instancetype"),

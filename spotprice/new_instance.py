@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from libs.ec2 import Ec2
-from libs.spot_instance import Spot_instance
+from libs.spot_instance import SpotInstance
 
 from libs import ec2_prices
 from libs import configfiles
@@ -122,7 +122,7 @@ def main():
         sys.exit(1)
 
     #turn into spot spotinstances
-    spot_instance = Spot_instance(bidprice, args.role, args.name, args.instancetype, args.ami, 
+    spot_instance = SpotInstance(bidprice, args.role, args.name, args.instancetype, args.ami, 
                                      args.keyname, args.securitygroups, args.zone, 
                                      elb_name=args.elb, Ec2Connection=ec2.connection)
     

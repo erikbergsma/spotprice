@@ -3,7 +3,7 @@ import logging
 import argparse
 import sys
 from libs import ec2_prices
-from libs.spot_instances import Spot_instances
+from libs.spot_instances import SpotInstances
 
 def setup_parser():
     parser = argparse.ArgumentParser()
@@ -54,6 +54,6 @@ if __name__ == '__main__':
     args = setup_parser()
     log = setup_logging("new_spot_instance.py", loglevel=args.loglevel)
     
-    spot_instances = Spot_instances()
+    spot_instances = SpotInstances()
     
     sys.exit(main())
