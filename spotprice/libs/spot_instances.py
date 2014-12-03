@@ -9,6 +9,7 @@ from zookeeper import Zookeeper
 log = logging.basicConfig()
 
 class Spotinstances():
+    """ class to interact (get/create/list) spot instances """
     
     ATTRIBUTES = ["price", "role", "name", "instancetype", "ami",
                   "keyname", "securitygroups", "elb", "zone"]

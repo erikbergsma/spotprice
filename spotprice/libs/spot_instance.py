@@ -14,6 +14,8 @@ from boto.exception import EC2ResponseError
 log = logging.basicConfig()
 
 class Spotinstance():
+    """ the 'model' for a spot instance """
+    
     #this is usually the first part of a full node path; e.g. /instances/i-bloebla/role or /backups/ratingredis/success
     INSTANCEPREFIX="/instances/"
 

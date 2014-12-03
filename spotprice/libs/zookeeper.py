@@ -11,13 +11,14 @@ from kazoo.handlers.threading import TimeoutError
 log = logging.basicConfig()
 
 class Zookeeper(object):
+    """ class to interact with zookeeper, and some wrappers for setting and getting data """
             
     def __init__(self, connection=False, zookeeperhost=None):
         """ possibility to override the zookeeperhost (url:port) 
         otherwise it reads from a configfile """
                 
         if not zookeeperhost:
-            self.ZOOKEEPERHOST = configfiles.get_value_from_configfile("zookeeper.cfg", "zookeeper", "url")
+            self.ZOOKEEPERHOST = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
         
         else:
             self.ZOOKEEPERHOST = zookeeperhost
