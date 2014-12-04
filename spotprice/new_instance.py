@@ -4,6 +4,7 @@ import argparse
 import sys
 
 from libs.ec2 import Ec2
+from libs.zookeeper import Zookeeper
 from libs.spot_instance import SpotInstance
 
 from libs import ec2_prices
@@ -13,8 +14,8 @@ from argparse import RawTextHelpFormatter
 from boto.exception import BotoServerError
 from boto.exception import EC2ResponseError
 
-SUPPORTED_INSTANCES = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_instance", list=True)
-SUPPORTED_AMIS = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_ami", list=True)
+SUPPORTED_INSTANCES = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_instance")
+SUPPORTED_AMIS = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_ami")
 
 def setup_parser():
     parser = argparse.ArgumentParser(description='usage: new_instance.py name role instancetype zone [[[[[[securitygroup1 securitygroup2] percentage] ami] keyname] elb] loglevel]', 
@@ -107,7 +108,7 @@ def check_arguments():
 def main():
     check_arguments()
     
-    current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(args.instancetype, args.zone)
+    current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(args.instancetype, args.zone, ec2=ec2)
     log.info("current spot price: %s" % current_spot_price)
     
     current_on_demand_price = ec2_prices.get_ondemand_price_for_instancetype(args.instancetype)
@@ -124,7 +125,7 @@ def main():
     #turn into spot spotinstances
     spot_instance = SpotInstance(bidprice, args.role, args.name, args.instancetype, args.ami, 
                                      args.keyname, args.securitygroups, args.zone, 
-                                     elb_name=args.elb, Ec2Connection=ec2.connection)
+                                     elb_name=args.elb, ec2Obj=ec2, zookeeperObj=zookeeper)
     
     spot_instance.spawn()
     
@@ -135,6 +136,14 @@ if __name__ == '__main__':
     log = setup_logging("new_spot_instance.py", loglevel=args.loglevel)
     logging.getLogger('boto').setLevel(logging.CRITICAL)
     
-    ec2 = Ec2()
+    #get the zookeeper host, and create the zookeeper object
+    zookeeper_url = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
+    zookeeper = Zookeeper(zookeeperhost=zookeeper_url)
+    
+    #get the ec2 credentials, and create the ec2 object
+    ec2_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
+    ec2_key = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
+    ec2_secret = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
+    ec2 = Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
     
     sys.exit(main())

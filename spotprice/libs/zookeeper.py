@@ -1,40 +1,30 @@
 #!/usr/bin/env python
 
 import kazoo
-import logging
-
-import configfiles
+import logging as log
 
 from kazoo.client import KazooClient
 from kazoo.handlers.threading import TimeoutError
-
-log = logging.basicConfig()
 
 class Zookeeper(object):
     """ class to interact with zookeeper, and some wrappers for setting and getting data """
             
     def __init__(self, connection=None, zookeeperhost=None):
-        """ possibility to override the zookeeperhost (url:port) 
-        otherwise it reads from a configfile """
-                
-        if not zookeeperhost:
-            self.ZOOKEEPERHOST = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
-        
-        else:
-            self.ZOOKEEPERHOST = zookeeperhost
+        if not zookeeperhost and not connection:
+            log.fatal("you must supply either a valid zookeeper url OR a zookeeper connection to initialize the zookeeper class")
             
-        if connection:
-            self.connection = connection
-        else:
-            self.create_connection(self.ZOOKEEPERHOST)
+        self.connection = connection if connection else self.create_connection(zookeeperhost)
 
     def create_connection(self, zookeeperhost):
         try:
-            self.connection = KazooClient(hosts=zookeeperhost)
-            self.connection.start(timeout=5)
+            connection = KazooClient(hosts=zookeeperhost)
+            connection.start(timeout=5)
             
         except TimeoutError:
+            log.fatal("making zookeeper connection timed out")
             self.connection = None
+            
+        return connection
     
     def create_node(self, zkpath, value=None):
         log.debug("creating this zkpath: %s and setting it to this value: %s" % (zkpath, value))
@@ -60,7 +50,7 @@ class Zookeeper(object):
             data = rawdata.decode("utf-8")
         
         except AttributeError:
-            logging.debug("error parsing zk_data as utf-8")
+            log.debug("error parsing zk_data as utf-8")
             if return_stat:
                 return rawdata, stat
             else:        

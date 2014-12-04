@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-import logging
+import logging as log
 import ec2
 import spot_instance
+import configfiles
 
 from zookeeper import Zookeeper
-
-log = logging.basicConfig()
 
 class SpotInstances():
     """ class to interact (get/create/list) spot instances """
@@ -14,9 +13,22 @@ class SpotInstances():
     ATTRIBUTES = ["price", "role", "name", "instancetype", "ami",
                   "keyname", "securitygroups", "elb", "zone"]
     
-    def __init__(self):
-        self.zookeeper = Zookeeper()
-        self.ec2 = ec2.Ec2()
+    def __init__(self, zookeeperObj=None, ec2Obj=None):
+        #connections are sparse, preferable re-use
+        if zookeeperObj:
+            self.zookeeper = zookeeperObj 
+        else:
+            zookeeper_url = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
+            self.zookeeper = Zookeeper(zookeeper_url)
+            
+        if ec2Obj:
+            self.ec2 = ec2Obj
+        
+        else:
+            ec2_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
+            ec2_key = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
+            ec2_secret = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
+            self.ec2 = ec2.Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
 
     def get_all_running(self):
         """queries ec2 for "fullfilled" spot instances, returns them in an list"""
@@ -24,7 +36,7 @@ class SpotInstances():
         return_list = []
         
         #get all instances from ec2, this excludes stopped instances
-        spot_instances = self.ec2.connection.get_all_spot_instance_requests()                
+        spot_instances = self.ec2.connection.get_all_spot_instance_requests()
         log.debug("found these spot instance requests: %s" % spot_instances)
         
         for instance in spot_instances:    
@@ -43,7 +55,6 @@ class SpotInstances():
         looks for the child zknode called: spotinstance to determine if that instance is a spotinstance or not
         instance id is the unique identifier, because all instances are stored as zknodes under /instances/ in zookeeper
         """
-    
         return_list = []    
         all_instance_ids = self.zookeeper.connection.get_children("/instances")
         
@@ -60,7 +71,7 @@ class SpotInstances():
         fetch all the other values for spotinstance with id: X
         then convert all this information into a "spotinstance" object
         """
-        
+                
         spot_details = self.get_details_for_id(instance_id)
         
         return spot_instance.SpotInstance(spot_details.get("price"),
@@ -72,7 +83,9 @@ class SpotInstances():
                                             spot_details.get("securitygroups"),
                                             spot_details.get("zone"),
                                             elb_name=spot_details.get("elb"),
-                                            instance_id=instance_id)
+                                            instance_id=instance_id,
+                                            zookeeperObj=self.zookeeper,
+                                            ec2Obj=self.ec2)
     
     def get_details_for_id(self, instance_id):
         """
@@ -84,7 +97,7 @@ class SpotInstances():
             if attribute in self.ATTRIBUTES:
                 value = self.zookeeper.fetch_node("/instances/%s/%s" % (instance_id, attribute))
                 
-                log.debug("spotinstance with id: %s has this value: %s for this attribute: %s" % instance_id, value, attribute)
+                log.debug("spotinstance with id: %s has this value: %s for this attribute: %s" % (instance_id, value, attribute))
                 
                 #security groups are stored as group1,group2,groupn
                 return_dict[attribute] = value.split(",") if attribute == "securitygroups" else value

@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 
+import sys
+import logging as log
 import boto.ec2
 import boto.ec2.elb
 
-import configfiles
-
 class Ec2:
-    def __init__(self, connection=None):
-        self.EC2_REGION = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
-        self.EC2_KEY = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
-        self.EC2_SECRET = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
-        
+    """ a class to create a ec2 (elb) connection, and some shortcuts """
+     
+    def __init__(self, ec2_region=None, ec2_key=None, ec2_secret=None, connection=None):
         if not connection:
+            if not ec2_region or not ec2_key or not ec2_secret:
+                log.fatal("you must supply a region AND a key AND a secret")
+                sys.exit(2)
+            
+            self.EC2_REGION = ec2_region
+            self.EC2_KEY = ec2_key
+            self.EC2_SECRET = ec2_secret
+
             self.create_ec2_connection()
+        
         else:
             self.connection = connection
         

@@ -2,12 +2,10 @@
 
 import os
 import sys
-import logging
+import logging as log
 
 from ConfigParser import SafeConfigParser
 from ConfigParser import NoSectionError
-
-log = logging.basicConfig()
 
 def get_value_from_configfile(configfile_name, section_name, value, extrafolders=None):
     """
@@ -16,7 +14,7 @@ def get_value_from_configfile(configfile_name, section_name, value, extrafolders
     - current working dir
     - /tmp
     """
-    folders = ["/root", os.getcwd() ]
+    folders = ["/root", os.getcwd(), "/tmp"]
     
     if extrafolders:
         folders.extend(extrafolders)
@@ -27,7 +25,12 @@ def get_value_from_configfile(configfile_name, section_name, value, extrafolders
         try:
             config_file_path = folder + "/" + configfile_name
             parser.read(config_file_path)
-            return parser.get(section_name, value)
+            value = parser.get(section_name, value)
+            
+            if "," in value:
+                return value.split(",")
+            
+            return value
         
         except NoSectionError:
             continue

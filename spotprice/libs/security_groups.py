@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-import logging
+import logging as log
 from ec2 import Ec2
-
-log = logging.basicConfig()
 
 def get_id_for_groupname(groupname, ec2=None):
     used_group=False

@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 import requests
-import json
 import configfiles
-from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta
 from ec2 import Ec2
 
 INSTANCE_PRICES_URL = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "spot_price_url")
 
 def get_ondemand_price_for_instancetype(instancetypeArg):
     response = requests.get(INSTANCE_PRICES_URL)
-    prices = json.loads(response.text)
+    prices = response.json()
     
     my_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "region")
     
@@ -21,8 +20,9 @@ def get_ondemand_price_for_instancetype(instancetypeArg):
                     if instancetype["size"] == instancetypeArg:
                         return instancetype["valueColumns"][0]["prices"]["USD"]
 
-def get_current_spot_price_for_instancetype(instancetype, availability_zone, relaunch=False):
-    ec2 = Ec2()
+def get_current_spot_price_for_instancetype(instancetype, availability_zone, relaunch=False, ec2=None):
+    if not ec2:
+        ec2 = Ec2()
     
     now = datetime.today() 
     start_time = now.isoformat()

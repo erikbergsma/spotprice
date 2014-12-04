@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
-import logging
+import logging as log
 import copy
 import time
 import requests
 
 import security_groups
+import configfiles
 import ec2 as ec2
-import zookeeper as zookeeper
+from zookeeper import Zookeeper
 
 from boto.exception import EC2ResponseError
-
-log = logging.basicConfig()
 
 class SpotInstance():
     """ the 'model' for a spot instance """
@@ -35,7 +34,7 @@ class SpotInstance():
     
     def __init__(self, price, role, name, instancetype, ami, keyname, 
                  securitygroups, zone, instance_id=None, elb_name=None,
-                 extended_fetch=True, ZookeeperConnection=None, Ec2Connection=None):
+                 extended_fetch=True, zookeeperObj=None, ec2Obj=None):
         
         self.price = price
         self.role = role
@@ -51,9 +50,20 @@ class SpotInstance():
         self.id = instance_id
         self.zk_path = self.INSTANCEPREFIX + self.id if self.id else False
         
-        #connections are sparse, preferable re-use one (the connection= parameter)
-        self.zookeeper = zookeeper.Zookeeper(connection=ZookeeperConnection)
-        self.ec2 = ec2.Ec2(connection=Ec2Connection)
+        #connections are sparse, preferable re-use
+        if zookeeperObj:
+            self.zookeeper = zookeeperObj 
+        else:
+            zookeeper_url = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
+            self.zookeeper = Zookeeper(zookeeper_url)
+            
+        if ec2Obj:
+            self.ec2 = ec2Obj
+        else:
+            ec2_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
+            ec2_key = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
+            ec2_secret = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
+            self.ec2 = ec2.Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
                     
     def store_details(self):
         pricepath = self.zk_path + self.PRICEPREFIX
@@ -134,7 +144,7 @@ class SpotInstance():
         else:
             log.warn("could not find ELB with name: %s" % self.elb_name)
             
-    def spawn(self, count=1, typearg="one-time"):
+    def spawn(self, respawn=False, count=1, typearg="one-time"):
         securitygroup_ids=[]
         for security_group in self.securitygroups:
             securitygroup_ids.append(security_groups.get_id_for_groupname(security_group, ec2=self.ec2))
@@ -160,8 +170,9 @@ class SpotInstance():
         if self.elb_name:
             self.add_to_loadbalancer()
 
-        #store in zookeeper
-        self.store_details()
+        if not respawn:
+            #store in zookeeper
+            self.store_details()
     
     def is_spot_instance(self):
         return True
