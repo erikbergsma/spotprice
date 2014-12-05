@@ -24,15 +24,15 @@ and therefore we highly recommend using a on demand / reserved instance for this
 The problem here is that as soon as web2 dies, we are stuck with a SPOF (single point of failure) in your HA design; if web1 does your website is down.
 Since AWS does not support dynamic spawning / pricing of spot instances, we have decided to build a tool that does that our selves.
 
-In practical sence this means that after you spawned your server, the details of your server are stored in zookeeper
+In practical sence this means that after you spawned your server, the details of your server are stored in zookeeper.
 Next step is that every X minutes there is a daemon checking if your spot instance is still up and running, and if not, it relaunches it.
 This limits the time that you are stuck with a SPOF to about 5-10 minutes. Which is on our eyes acceptable compared to the amount of cost savings.
 
 ### About the price
-its hard to determine a "safe enough" price for your spot instance; if the price is to low your instance may be killed to quickly,
+Its hard to determine a "safe enough" price for your spot instance; if the price is too low your instance may be killed too quickly,
 if it is too high you are paying to much (while the idea is cost saving) 
 
-however since a replacing spot instance can be spawned in a mather of minutes we have decided to bid as low as possible, and maximize cost savings.
+However since a replacing spot instance can be spawned in a matter of minutes we have decided to bid as low as possible, and maximize cost savings.
 this means that the script gets the current bidprice for your ec2 region, and adds 1% 
 
 this value of 1% can be overridden while using new_instance.py
