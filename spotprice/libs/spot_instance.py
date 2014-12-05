@@ -8,8 +8,8 @@ import requests
 import security_groups
 import configfiles
 import ec2 as ec2
-from zookeeper import Zookeeper
 
+from zookeeper import Zookeeper
 from boto.exception import EC2ResponseError
 
 class SpotInstance():
@@ -54,15 +54,15 @@ class SpotInstance():
         if zookeeperObj:
             self.zookeeper = zookeeperObj 
         else:
-            zookeeper_url = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
+            zookeeper_url = configfiles.get_value("spotprice.cfg", "zookeeper", "url")
             self.zookeeper = Zookeeper(zookeeper_url)
             
         if ec2Obj:
             self.ec2 = ec2Obj
         else:
-            ec2_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
-            ec2_key = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
-            ec2_secret = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
+            ec2_region = configfiles.get_value("spotprice.cfg", "ec2", "EC2_REGION")
+            ec2_key = configfiles.get_value("spotprice.cfg", "ec2", "EC2_KEY")
+            ec2_secret = configfiles.get_value("spotprice.cfg", "ec2", "EC2_SECRET")
             self.ec2 = ec2.Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
                     
     def store_details(self):

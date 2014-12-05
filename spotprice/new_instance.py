@@ -14,9 +14,6 @@ from argparse import RawTextHelpFormatter
 from boto.exception import BotoServerError
 from boto.exception import EC2ResponseError
 
-SUPPORTED_INSTANCES = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_instance")
-SUPPORTED_AMIS = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "supported_ami")
-
 def setup_parser():
     parser = argparse.ArgumentParser(description='usage: new_instance.py name role instancetype zone [[[[[[securitygroup1 securitygroup2] percentage] ami] keyname] elb] loglevel]', 
                                      formatter_class=RawTextHelpFormatter)
@@ -61,16 +58,13 @@ Defaults to: 'Info'")
     return parser.parse_args()
 
 def setup_logging(logname, loglevel="INFO"):
-    logger = logging.getLogger(logname)
-    logger.setLevel(loglevel)
-
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter('%(levelname)s %(message)s'))
-    logger.addHandler(handler)
-
-    return logger
+    logging.basicConfig(level=loglevel)
+    
+    return logging
 
 def check_arguments():
+    print ec2
+    
     #supported_instance_types=ec2.connection.get_all_instance_types()
     supported_instance_types = SUPPORTED_INSTANCES
     if args.instancetype not in supported_instance_types:
@@ -106,6 +100,8 @@ def check_arguments():
             sys.exit(2)
             
 def main():
+    print ec2
+    
     check_arguments()
     
     current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(args.instancetype, args.zone, ec2=ec2)
@@ -133,17 +129,29 @@ def main():
 
 if __name__ == '__main__':
     args = setup_parser()
-    log = setup_logging("new_spot_instance.py", loglevel=args.loglevel)
+    log = setup_logging("new_instance.py", loglevel=args.loglevel)
     logging.getLogger('boto').setLevel(logging.CRITICAL)
     
+    log.info("erik")
+    
+    SUPPORTED_INSTANCES = configfiles.get_value("spotprice.cfg", "ec2", "supported_instance")
+    SUPPORTED_AMIS = configfiles.get_value("spotprice.cfg", "ec2", "supported_ami")
+    
+    log.info("erik2")
+    
     #get the zookeeper host, and create the zookeeper object
-    zookeeper_url = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
+    zookeeper_url = configfiles.get_value("spotprice.cfg", "zookeeper", "url")
     zookeeper = Zookeeper(zookeeperhost=zookeeper_url)
     
+    log.info("erik3")
+    
     #get the ec2 credentials, and create the ec2 object
-    ec2_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
-    ec2_key = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
-    ec2_secret = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
-    ec2 = Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
+    ec2_config = configfiles.get_section("spotprice.cfg", "ec2")
+    ec2 = Ec2(ec2_region=ec2_config["ec2_region"], ec2_key=ec2_config["ec2_key"],
+              ec2_secret=ec2_config["ec2_secret"])
+    
+    print ec2.connection
+    
+    log.info("erik4")
     
     sys.exit(main())

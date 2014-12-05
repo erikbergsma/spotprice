@@ -2,6 +2,7 @@
 
 import sys
 import logging as log
+
 import boto.ec2
 import boto.ec2.elb
 
@@ -18,15 +19,15 @@ class Ec2:
             self.EC2_KEY = ec2_key
             self.EC2_SECRET = ec2_secret
 
-            self.create_ec2_connection()
+            self.connection = self.create_ec2_connection()
         
         else:
             self.connection = connection
         
     def create_ec2_connection(self):
-        self.connection = boto.ec2.connect_to_region(self.EC2_REGION,
-                                                     aws_access_key_id=self.EC2_KEY,
-                                                     aws_secret_access_key=self.EC2_SECRET)
+        return boto.ec2.connect_to_region(self.EC2_REGION,
+                                            aws_access_key_id=self.EC2_KEY,
+                                            aws_secret_access_key=self.EC2_SECRET)
 
     def create_elb_connection(self, region_object=None):
         if not region_object:

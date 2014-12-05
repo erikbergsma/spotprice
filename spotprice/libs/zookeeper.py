@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import kazoo
 import logging as log
+import kazoo
 
 from kazoo.client import KazooClient
 from kazoo.handlers.threading import TimeoutError

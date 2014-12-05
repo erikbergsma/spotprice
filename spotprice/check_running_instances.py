@@ -59,16 +59,16 @@ def main():
 
 if __name__ == '__main__':
     args = setup_parser()
-    log = setup_logging("new_spot_instance.py", loglevel=args.loglevel)
+    log = setup_logging("check_running_instances.py", loglevel=args.loglevel)
     
     #get the zookeeper host, and create the zookeeper object
-    zookeeper_url = configfiles.get_value_from_configfile("spotprice.cfg", "zookeeper", "url")
+    zookeeper_url = configfiles.get_value("spotprice.cfg", "zookeeper", "url")
     zookeeper = Zookeeper(zookeeperhost=zookeeper_url)
     
     #get the ec2 credentials, and create the ec2 object
-    ec2_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_REGION")
-    ec2_key = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_KEY")
-    ec2_secret = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "EC2_SECRET")
+    ec2_region = configfiles.get_value("spotprice.cfg", "ec2", "EC2_REGION")
+    ec2_key = configfiles.get_value("spotprice.cfg", "ec2", "EC2_KEY")
+    ec2_secret = configfiles.get_value("spotprice.cfg", "ec2", "EC2_SECRET")
     ec2 = Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
     
     spot_instances = SpotInstances(zookeeperObj=zookeeper, ec2Obj=ec2)

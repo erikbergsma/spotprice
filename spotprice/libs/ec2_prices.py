@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 import requests
+import logging as log
 import configfiles
 
 from datetime import datetime, timedelta
 from ec2 import Ec2
 
-INSTANCE_PRICES_URL = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "spot_price_url")
+INSTANCE_PRICES_URL = configfiles.get_value("spotprice.cfg", "ec2", "spot_price_url")
 
 def get_ondemand_price_for_instancetype(instancetypeArg):
     response = requests.get(INSTANCE_PRICES_URL)
     prices = response.json()
     
-    my_region = configfiles.get_value_from_configfile("spotprice.cfg", "ec2", "region")
+    my_region = configfiles.get_value("spotprice.cfg", "ec2", "region")
     
     for region in prices["config"]["regions"]:
         if region["region"] == my_region:
@@ -22,7 +23,11 @@ def get_ondemand_price_for_instancetype(instancetypeArg):
 
 def get_current_spot_price_for_instancetype(instancetype, availability_zone, relaunch=False, ec2=None):
     if not ec2:
-        ec2 = Ec2()
+        #get the ec2 credentials, and create the ec2 object
+        ec2_region = configfiles.get_value("spotprice.cfg", "ec2", "EC2_REGION")
+        ec2_key = configfiles.get_value("spotprice.cfg", "ec2", "EC2_KEY")
+        ec2_secret = configfiles.get_value("spotprice.cfg", "ec2", "EC2_SECRET")
+        ec2 = Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
     
     now = datetime.today() 
     start_time = now.isoformat()
