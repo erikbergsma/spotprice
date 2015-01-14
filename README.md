@@ -21,12 +21,12 @@ Availability of your website is still guranteed by the other redundant copy of t
 and therefore we highly recommend using a on demand / reserved instance for this server.
 
 ### Core problem and solution
-The problem here is that as soon as web2 dies, we are stuck with a SPOF (single point of failure) in your HA design; if web1 does your website is down.
+The problem here is that as soon as web2 dies, we are stuck with a SPOF (single point of failure) in your HA design; if web1 dies your website is down.
 Since AWS does not support dynamic spawning / pricing of spot instances, we have decided to build a tool that does that our selves.
 
 In practical sence this means that after you spawned your server, the details of your server are stored in zookeeper.
 Next step is that every X minutes there is a daemon checking if your spot instance is still up and running, and if not, it relaunches it.
-This limits the time that you are stuck with a SPOF to about 5-10 minutes. Which is on our eyes acceptable compared to the amount of cost savings.
+This limits the time that you are stuck with a SPOF to about 5-10 minutes. Which is on our eyes acceptable compared to the amount of cost savings. We understand that opionions about this will vary from case to case.
 
 ### About the price
 Its hard to determine a "safe enough" price for your spot instance; if the price is too low your instance may be killed too quickly,
