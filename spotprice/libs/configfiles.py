@@ -6,23 +6,25 @@ import sys
 
 from ConfigParser import SafeConfigParser
 from ConfigParser import NoSectionError
+from os.path import expanduser
 
 """
 search in these folders:
-- /root
+- current homedir
 - current working dir
 - /tmp
 """
-FOLDERS = ["/root", os.getcwd(), "/tmp"]
+FOLDERS = [expanduser("~"), os.getcwd(), "/tmp"]
 
-def get_value(configfile_name, section_name, value):    
+#gets the value for a key in a specific section
+def get_value(configfile_name, section_name, key):
     parser = SafeConfigParser()
     
     for folder in FOLDERS:
         try:
             config_file_path = folder + "/" + configfile_name
             parser.read(config_file_path)
-            value = parser.get(section_name, value)
+            value = parser.get(section_name, key)
             
             log.debug(value)
             
@@ -38,6 +40,7 @@ def get_value(configfile_name, section_name, value):
 
     sys.exit(2)
     
+#gets an entire section from a configfile
 def get_section(configfile_name, section_name):
     parser = SafeConfigParser()
     dictionary = {}
@@ -57,7 +60,8 @@ def get_section(configfile_name, section_name):
     
     log.debug(dictionary)        
     return dictionary
-        
+
+#gets all sections from a configfile
 def get_all(configfile_name):
     parser = SafeConfigParser()
     dictionary = {}
