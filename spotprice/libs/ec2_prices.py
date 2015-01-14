@@ -6,10 +6,10 @@ import configfiles
 from datetime import datetime, timedelta
 from ec2 import Ec2
 
-INSTANCE_PRICES_URL = configfiles.get_value("spotprice.cfg", "ec2", "spot_price_url")
+ON_DEMAND_PRICES_URL = configfiles.get_value("ondemand_price_url.cfg", "ec2", "spot_price_url")
 
 def get_ondemand_price_for_instancetype(instancetypeArg):
-    response = requests.get(INSTANCE_PRICES_URL)
+    response = requests.get(ON_DEMAND_PRICES_URL)
     prices = response.json()
     
     my_region = configfiles.get_value("spotprice.cfg", "ec2", "region")
