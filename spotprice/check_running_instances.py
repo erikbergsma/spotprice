@@ -2,10 +2,10 @@
 import logging
 import argparse
 import sys
+
 from libs import configfiles
 from libs.zookeeper import Zookeeper
 from libs.ec2 import Ec2
-
 from libs import ec2_prices
 from libs.spot_instances import SpotInstances
 
@@ -43,12 +43,11 @@ def main():
     #these are the ones that are defined, but not running    
     for spot_instance in all_defined_spot_instances:
         log.info("this instance id is defined, but is not running anymore: %s, respawning" % spot_instance.id)
-                
         current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(spot_instance.instancetype,
                                                                                 spot_instance.zone, ec2=ec2)
         log.info("current_spot_price: %s" % current_spot_price)
-        
         price = ec2_prices.get_spotprice_bid(current_spot_price)
+        
         log.info("going to bid: %s" % price)
         
         log.info("going to spawn an instance with the following details:")

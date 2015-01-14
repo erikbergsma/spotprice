@@ -8,7 +8,6 @@ import boto.ec2.elb
 
 class Ec2:
     """ a class to create a ec2 (elb) connection, and some shortcuts """
-     
     def __init__(self, ec2_region=None, ec2_key=None, ec2_secret=None, connection=None):
         if not connection:
             if not ec2_region or not ec2_key or not ec2_secret:
@@ -18,9 +17,9 @@ class Ec2:
             self.EC2_REGION = ec2_region
             self.EC2_KEY = ec2_key
             self.EC2_SECRET = ec2_secret
-
             self.connection = self.create_ec2_connection()
         
+        #its cheaper to re-use a ec2 connection
         else:
             self.connection = connection
         
