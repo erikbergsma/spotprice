@@ -41,6 +41,7 @@ this value of 1% can be overridden while using new_instance.py
 - a working (non encrypted / authenticated) zookeeper cluster
 - kazoo installed
 - boto installed
+- requests installed
 - a copy of the code in this repo
 
 ## How to:
