@@ -14,7 +14,7 @@ from argparse import RawTextHelpFormatter
 from boto.exception import BotoServerError
 from boto.exception import EC2ResponseError
 
-def setup_parser():
+def setup_parser(defaults):
     parser = argparse.ArgumentParser(description='usage: new_instance.py name role instancetype zone [[[[[[securitygroup1 securitygroup2] percentage] ami] keyname] elb] loglevel]', 
                                      formatter_class=RawTextHelpFormatter)
     
@@ -31,40 +31,45 @@ def setup_parser():
                         required=True,
                         help="REQUIRED: the ec2 zone in where the instance should be launched")
     parser.add_argument("--securitygroups",
-                        default=["General"],
+                        default=defaults["default_securitygroups"],
                         nargs='*',
                         help="OPTIONAL: the name(s) of the security groups that should be attached to the instance, multiple arguments accepted\n\
-Defaults to: 'General'")
-    parser.add_argument("--percentage", default=1, 
+Defaults to: '%s'" % defaults["default_securitygroups"])
+    parser.add_argument("--percentage", default=defaults["default_percentage"], 
                         type=int, 
                         help="OPTIONAL: the percentage we bid above the current bidprice\n\
-Defaults to: 1")
+Defaults to: %s" % default=defaults["default_percentage"] )
     parser.add_argument("--ami",
-                        default="ami-d28852a5",
+                        default=defaults["default_ami"],
                         help="OPTIONAL: the id of the AMI that we should use as the base of the instance\n\
-Defaults to: 'ami-d28852a5'")
+Defaults to: '%s'" % defaults["default_ami"])
     parser.add_argument("--keyname",
-                        default="Production",
+                        default=defaults["default_key"],
                         help="OPTIONAL: the name of the SSH key that will be used\n\
-Defaults to: 'Production'")
+Defaults to: '%s'" % defaults["default_key"])
     parser.add_argument("--elb",
                         help="OPTIONAL: the name of the ELB this machine should be attached to (if any)")
     parser.add_argument("--loglevel",
                         "-l",
-                        default="INFO",
+                        default=defaults["default_loglevel"],
                         help="OPTIONAL: the verbosity of the logging\n\
 Defaults to: 'Info'")
 
     return parser.parse_args()
 
 def setup_logging(logname, loglevel="INFO"):
-    logging.basicConfig(level=loglevel)
+    logger = logging.getLogger(logname)
+    logger.setLevel(loglevel)
+
+    handler = logging.StreamHandler()
+    handler.setLevel(loglevel)
+    handler.setFormatter(logging.Formatter('%(levelname)s %(message)s'))
     
-    return logging
+    logger.addHandler(handler)
+
+    return logger
 
 def check_arguments():
-    print ec2
-    
     #supported_instance_types=ec2.connection.get_all_instance_types()
     supported_instance_types = SUPPORTED_INSTANCES
     if args.instancetype not in supported_instance_types:
@@ -100,8 +105,6 @@ def check_arguments():
             sys.exit(2)
             
 def main():
-    print ec2
-    
     check_arguments()
     
     current_spot_price = ec2_prices.get_current_spot_price_for_instancetype(args.instancetype, args.zone, ec2=ec2)
@@ -128,30 +131,21 @@ def main():
     log.info("succesfully spawned: %s with id: %s" % (spot_instance.name, spot_instance.id))
 
 if __name__ == '__main__':
-    args = setup_parser()
+    defaults = configfiles.get_section("spotprice.cfg", "spotprice")
+    args = setup_parser(defaults=defaults)
+
     log = setup_logging("new_instance.py", loglevel=args.loglevel)
     logging.getLogger('boto').setLevel(logging.CRITICAL)
     
-    log.info("erik")
-    
-    SUPPORTED_INSTANCES = configfiles.get_value("spotprice.cfg", "ec2", "supported_instance")
-    SUPPORTED_AMIS = configfiles.get_value("spotprice.cfg", "ec2", "supported_ami")
-    
-    log.info("erik2")
+    SUPPORTED_INSTANCES = defaults["supported_instance"]
+    SUPPORTED_AMIS = = defaults["supported_ami"]
     
     #get the zookeeper host, and create the zookeeper object
-    zookeeper_url = configfiles.get_value("spotprice.cfg", "zookeeper", "url")
+    zookeeper_url = defaults["zookeeper_url"]
     zookeeper = Zookeeper(zookeeperhost=zookeeper_url)
     
-    log.info("erik3")
-    
     #get the ec2 credentials, and create the ec2 object
-    ec2_config = configfiles.get_section("spotprice.cfg", "ec2")
-    ec2 = Ec2(ec2_region=ec2_config["ec2_region"], ec2_key=ec2_config["ec2_key"],
-              ec2_secret=ec2_config["ec2_secret"])
-    
-    print ec2.connection
-    
-    log.info("erik4")
+    ec2 = Ec2(ec2_region=defaults["ec2_region"], ec2_key=defaults["ec2_key"],
+              ec2_secret=defaults["ec2_secret"])
     
     sys.exit(main())

@@ -3,6 +3,7 @@
 import logging as log
 import os
 import sys
+import os.path
 
 from ConfigParser import SafeConfigParser
 from ConfigParser import NoSectionError
@@ -21,22 +22,23 @@ def get_value(configfile_name, section_name, key):
     parser = SafeConfigParser()
     
     for folder in FOLDERS:
-        try:
-            config_file_path = folder + "/" + configfile_name
-            parser.read(config_file_path)
-            value = parser.get(section_name, key)
-            
-            log.debug(value)
-            
-            if "," in value:
-                return value.split(",")
+        config_file_path = folder + "/" + configfile_name
+        if os.path.exists(config_file_path):
+            try:
+                parser.read(config_file_path)
+                value = parser.get(section_name, key)
+                
+                log.debug(value)
+                
+                if "," in value:
+                    return value.split(",")
 
-            return value
+                return value
+            
+            except NoSectionError:
+                continue
         
-        except NoSectionError:
-            continue
-        
-    log.error("cannot find a value for: \"%s\" in a configfile called: \"%s\" in folders: %s" % (value, configfile_name, FOLDERS))
+    log.error("cannot find a value for: \"%s\" in a configfile called: \"%s\" in folders: %s" % (key, configfile_name, FOLDERS))
 
     sys.exit(2)
     
@@ -47,33 +49,22 @@ def get_section(configfile_name, section_name):
     
     for folder in FOLDERS:
         config_file_path = folder + "/" + configfile_name
-        
         log.debug(config_file_path)
         
-        parser.read(config_file_path)
-        
-        try:
-            for option in parser.options(section_name):
-                dictionary[option] = parser.get(section_name, option)
-        except NoSectionError:
-            continue
+        if os.path.exists(config_file_path):
+            parser.read(config_file_path)
+            
+            try:
+                for key in parser.options(section_name):
+                    value = parser.get(section_name, key)
+                    
+                    if "," in value:
+                        value = value.split(",")
+                    
+                    dictionary[key] = value
+            
+            except NoSectionError:
+                continue
     
-    log.debug(dictionary)        
-    return dictionary
-
-#gets all sections from a configfile
-def get_all(configfile_name):
-    parser = SafeConfigParser()
-    dictionary = {}
-    
-    for folder in FOLDERS:
-        config_file_path = folder + "/" + configfile_name
-        parser.read(config_file_path)
-        
-        for section in parser.sections():
-            dictionary[section] = {}
-            for option in parser.options(section):
-                dictionary[section][option] = parser.get(section, option)
-    
-    log.debug(dictionary)
-    return dictionary
+        log.debug(dictionary)        
+        return dictionary
