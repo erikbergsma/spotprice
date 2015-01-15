@@ -33,8 +33,8 @@ class SpotInstance():
     ZONEPREFIX="/zone"
     
     def __init__(self, price, role, name, instancetype, ami, keyname, 
-                 securitygroups, zone, instance_id=None, elb_name=None,
-                 extended_fetch=True, zookeeperObj=None, ec2Obj=None):
+                 securitygroups, zone, zookeeperObj, ec2Obj,
+                 instance_id=None, elb_name=None, extended_fetch=True):
         
         self.price = price
         self.role = role
@@ -45,25 +45,12 @@ class SpotInstance():
         self.securitygroups = securitygroups
         self.elb_name = elb_name
         self.zone = zone
+        self.ec2 = ec2Obj
+        self.zookeeper = zookeeperObj
         
         #this could be gotten from the spawn/wait for fullfillment function
         self.id = instance_id
         self.zk_path = self.INSTANCEPREFIX + self.id if self.id else False
-        
-        #connections are sparse, preferable re-use
-        if zookeeperObj:
-            self.zookeeper = zookeeperObj 
-        else:
-            zookeeper_url = configfiles.get_value("spotprice.cfg", "zookeeper_url", "spotprice")
-            self.zookeeper = Zookeeper(zookeeper_url)
-            
-        if ec2Obj:
-            self.ec2 = ec2Obj
-        else:
-            ec2_region = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_REGION")
-            ec2_key = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_KEY")
-            ec2_secret = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_SECRET")
-            self.ec2 = ec2.Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
                     
     def store_details(self):
         pricepath = self.zk_path + self.PRICEPREFIX

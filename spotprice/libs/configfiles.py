@@ -10,8 +10,8 @@ from ConfigParser import NoSectionError
 from os.path import expanduser
 
 """
-search in these folders:
-- current homedir
+search in these folders, in this order:
+- current user' homedir
 - current working dir
 - /tmp
 """

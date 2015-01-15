@@ -14,22 +14,10 @@ class SpotInstances():
     ATTRIBUTES = ["price", "role", "name", "instancetype", "ami",
                   "keyname", "securitygroups", "elb", "zone"]
     
-    def __init__(self, zookeeperObj=None, ec2Obj=None):
+    def __init__(self, zookeeperObj, ec2Obj):
         #connections are sparse, preferable re-use
-        if zookeeperObj:
-            self.zookeeper = zookeeperObj 
-        else:
-            zookeeper_url = configfiles.get_value("spotprice.cfg", "spotprice", "url")
-            self.zookeeper = Zookeeper(zookeeper_url)
-            
-        if ec2Obj:
-            self.ec2 = ec2Obj
-        
-        else:
-            ec2_region = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_REGION")
-            ec2_key = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_KEY")
-            ec2_secret = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_SECRET")
-            self.ec2 = ec2.Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
+        self.ec2 = ec2Obj
+        self.zookeeper = zookeeperObj 
 
     def get_all_running(self):
         """queries ec2 for "fullfilled" spot instances, returns them in an list"""

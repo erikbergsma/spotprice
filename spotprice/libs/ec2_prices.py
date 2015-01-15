@@ -21,14 +21,7 @@ def get_ondemand_price_for_instancetype(instancetypeArg):
                     if instancetype["size"] == instancetypeArg:
                         return instancetype["valueColumns"][0]["prices"]["USD"]
 
-def get_current_spot_price_for_instancetype(instancetype, availability_zone, relaunch=False, ec2=None):
-    if not ec2:
-        #get the ec2 credentials, and create the ec2 object
-        ec2_region = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_REGION")
-        ec2_key = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_KEY")
-        ec2_secret = configfiles.get_value("spotprice.cfg", "spotprice", "EC2_SECRET")
-        ec2 = Ec2(ec2_region=ec2_region, ec2_key=ec2_key, ec2_secret=ec2_secret)
-    
+def get_current_spot_price_for_instancetype(instancetype, availability_zone, ec2, relaunch=False):
     now = datetime.today() 
     start_time = now.isoformat()
     end_time = (now - timedelta(seconds = 1)).isoformat()
